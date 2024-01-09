@@ -1,36 +1,17 @@
 import './App.css'
-import React, { useEffect } from 'react';
-import Pusher from 'pusher-js';
-import io from 'socket.io-client';
+import React, {useEffect} from 'react';
+import * as PusherPushNotifications from '@pusher/push-notifications-web';
 
 function App() {
-    const pusher = new Pusher('32a2614f3a518578d90a', {
-        cluster: 'ap2',
-        encrypted: true,
-    });
     useEffect(() => {
-        const socket = io('http://localhost:3000');
-        return () => {
-            socket.disconnect();  // Disconnect the socket when the component unmounts
-        };
-    }, []);
+        const beamsClient = new PusherPushNotifications.Client({
+            instanceId: '24f7d663-176b-4c2b-879f-11f16268f8f3',
+        });
 
-    useEffect(() => {
-        if ('Notification' in window) {
-            Notification.requestPermission().then((permission) => {
-                if (permission === 'granted') {
-                    const channel = pusher.subscribe('notifications');
-
-                    channel.bind('agent-notification', (data) => {
-                        if (Notification.permission === 'granted') {
-                            const notification = new Notification('Notification Title', {
-                                body: data.message,
-                            });
-                        }
-                    });
-                }
-            });
-        }
+        beamsClient.start()
+            .then(() => beamsClient.addDeviceInterest('hello'))
+            .then(() => console.log('Successfully registered and subscribed!'))
+            .catch(console.error);
     }, []);
 
     return (
